@@ -1,7 +1,7 @@
 const express = require('express')
 const handlebars = require('express-handlebars')
 const db = require('./models')
-const port = 3000
+const port = process.env.PORT || 3000
 const bodyParser = require('body-parser')
 const flash = require('connect-flash')
 const session = require('express-session')
