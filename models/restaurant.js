@@ -25,4 +25,4 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'Restaurant'
   })
   return Restaurant
-}
+};

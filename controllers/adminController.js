@@ -1,8 +1,10 @@
 const fs = require('fs')
 const db = require('../models')
 const Restaurant = db.Restaurant
+const User = db.User
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
+const helpers = require('../_helpers')
 
 const adminController = {
   getRestaurants: (req, res) => {
@@ -117,6 +119,30 @@ const adminController = {
         restaurant.destroy()
           .then((restaurant) => {
             res.redirect('/admin/restaurants')
+          })
+      })
+  },
+
+  getUsers: (req, res) => {
+    return User.findAll({ raw: true }).then(users => {
+      return res.render('admin/users', { users })
+    })
+  },
+
+  toggleAdmin: (req, res) => {
+    return User.findByPk(req.params.id)
+      .then((user) => {
+        // const currentUser = helpers.getUser(req)
+        // if (currentUser.id === user.id) {
+        //   req.flash('error_messages', '無法改變登入中的管理員')
+        //   return res.redirect('/admin/users')
+        // }
+        user.update({
+          isAdmin: !user.isAdmin
+        })
+          .then((user) => {
+            req.flash('success_messages', 'user was successfully to update')
+            res.redirect('/admin/users')
           })
       })
   }
