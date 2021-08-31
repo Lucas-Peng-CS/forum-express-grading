@@ -13,11 +13,11 @@
     <select class="form-control" id="categoryId" name="categoryId">
       {{#each categories}}
         <option value="{{this.id}}"
-          {{#if this.id === restaurant.CategoryId}}
+          {{#ifCond this.id ../restaurant.CategoryId}}
             selected
-          {{/if}}
-      >{{this.name}}</option>
-   {{/each}}
+          {{/ifCond}}
+        >{{this.name}}</option>
+      {{/each}}
     </select>
   </div>
 
