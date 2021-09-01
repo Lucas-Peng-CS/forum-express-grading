@@ -1,6 +1,21 @@
+const db = require('../models')
+const Restaurant = db.Restaurant
+const Category = db.Category
+
 const restController = {
   getRestaurants: (req, res) => {
-    return res.render('restaurants')
+    Restaurant.findAll({ include: Category }).then(restaurants => {
+      const data = restaurants.map(r => ({
+        // 需要展開的是第二層 dataValues 裡面的物件
+        ...r.dataValues,
+        description: r.dataValues.description.substring(0, 50),
+        categoryName: r.Category.name
+      }))
+      return res.render('restaurants', {
+        restaurants: data
+      })
+    })
   }
 }
+
 module.exports = restController
