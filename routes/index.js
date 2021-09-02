@@ -58,6 +58,8 @@ module.exports = (app, passport) => {
 
   app.delete('/admin/categories/:id', authenticatedAdmin, categoryController.deleteCategory)
 
+  app.get('/restaurants/feeds', authenticated, restController.getFeeds)
+
   app.get('/restaurants/:id', authenticated, restController.getRestaurant)
 
   app.post('/comments', authenticated, commentController.postComment)
