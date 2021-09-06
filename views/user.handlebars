@@ -1,0 +1,14 @@
+<div class="container">
+  <div class="row">
+    <div class="col-4">
+      <img class="img-responsive center-block" src="{{user.image}}" style="width: 250px;margin-bottom: 25px;">
+    </div>
+    <div class="col-8">
+      <div class="font-weight-bold mb-1">{{user.name}}</div>
+      <div class="mb-3">{{user.email}}</div>
+      <div class="edit-btn">
+        <a class="btn btn-primary" href="/users/{{user.id}}/edit" role="button">edit</a>
+      </div>
+    </div>
+  </div>
+</div>

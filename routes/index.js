@@ -75,6 +75,12 @@ module.exports = (app, passport) => {
   app.delete('/like/:restaurantId', authenticated, userController.removeLike)
 
   app.get('/users/top', authenticated, userController.getTopUser)
+  // 建立 User Profile
+  app.get('/users/:id', authenticated, userController.getUser)
+
+  app.get('/users/:id/edit', authenticated, userController.editUser)
+
+  app.put('/users/:id', authenticated, upload.single('image'), userController.putUser)
 
   app.post('/following/:userId', authenticated, userController.addFollowing)
 
@@ -82,7 +88,7 @@ module.exports = (app, passport) => {
 
   app.get('/signup', userController.signUpPage)
 
-  app.post('/signup', userController.signUp)
+  app.post('/signup', upload.single('image'), userController.signUp)
 
   app.get('/signin', userController.signInPage)
 

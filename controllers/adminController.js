@@ -1,4 +1,3 @@
-const fs = require('fs')
 const db = require('../models')
 const Restaurant = db.Restaurant
 const User = db.User
