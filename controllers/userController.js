@@ -1,9 +1,5 @@
 const bcrypt = require('bcryptjs')
-const db = require('../models')
-const User = db.User
-const Favorite = db.Favorite
-const Like = db.Like
-const Followship = db.Followship
+const { User, Favorite, Like, Followship, Comment, Restaurant, Sequelize } = require('../models')
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const helpers = require('../_helpers')
@@ -55,18 +51,33 @@ const userController = {
     }
   },
 
-  getUser: (req, res) => {
-    return User.findByPk(helpers.getUser(req).id, { raw: true }).then(user => {
-      return res.render('user', {
-        user: user
-      })
-    })
+  getUser: async (req, res) => {
+    const UserId = helpers.getUser(req).id
+    const results = Promise.all([
+      User.findByPk(UserId, { raw: true }),
+      Comment.findAll({
+        where: { UserId },
+        include: [{model: Restaurant, attributes:['id', 'image']}],
+        attributes: [[Sequelize.literal('DISTINCT `UserId`'), 'UserId']],
+        raw: true,
+        nest: true
+      }),
+      Comment.count({where: { UserId }})
+    ])
+    
+    try {
+      const [user, comments, commentsCount] =  await results
+      return res.render('user', { user, comments, commentsCount })
+    } catch (err) {
+      console.log(err)
+    }
   },
 
   editUser: (req, res) => {
-    return User.findByPk(helpers.getUser(req).id, { raw: true }).then(user => {
-      return res.render('editUser', { user: user })
-    })
+    return User.findByPk(helpers.getUser(req).id, { raw: true })
+      .then(user => {
+        return res.render('editUser', { user })
+      })
   },
 
   putUser: (req, res) => {
@@ -177,8 +188,6 @@ const userController = {
       ]
     }).then(users => {
       // 整理 users 資料
-      console.log(users)
-      console.log('*******')
       users = users.map(user => ({
         ...user.dataValues,
         // 計算追蹤者人數
