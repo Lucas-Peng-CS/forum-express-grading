@@ -53,21 +53,19 @@ const userController = {
 
   getUser: async (req, res) => {
     const UserId = helpers.getUser(req).id
-    const results = Promise.all([
-      User.findByPk(UserId, { raw: true }),
-      Comment.findAll({
-        where: { UserId },
-        include: [{model: Restaurant, attributes:['id', 'image']}],
-        attributes: [[Sequelize.literal('DISTINCT `UserId`'), 'UserId']],
-        raw: true,
-        nest: true
-      }),
-      Comment.count({where: { UserId }})
-    ])
     
     try {
-      const [user, comments, commentsCount] =  await results
-      return res.render('user', { user, comments, commentsCount })
+      const [user, comments] = await Promise.all([
+        User.findByPk(UserId, { raw: true }),
+        Comment.findAndCountAll({
+          where: { UserId },
+          include: [{model: Restaurant, attributes:['id', 'image']}],
+          attributes: [[Sequelize.literal('DISTINCT `UserId`'), 'UserId']],
+          raw: true,
+          nest: true
+        })
+      ])
+      return res.render('user', { user, comments })
     } catch (err) {
       console.log(err)
     }

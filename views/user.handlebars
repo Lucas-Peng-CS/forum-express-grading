@@ -6,7 +6,7 @@
     <div class="col-8">
       <div class="font-weight-bold mb-1">{{user.name}}</div>
       <div class="mb-3">{{user.email}}</div>
-      <div class="mb-3">{{commentsCount}} 已評論餐廳</div>
+      <div class="mb-3">{{comments.count}} 已評論餐廳</div>
       <div class="edit-btn">
         <a class="btn btn-primary" href="/users/{{user.id}}/edit" role="button">edit</a>
       </div>
@@ -16,10 +16,10 @@
 
 <div class="card mx-3">
   <div class="card-header">
-    {{commentsCount}} 已評論餐廳
+    {{comments.count}} 已評論餐廳
   </div>
   <div class="card-body d-flex flex-row flex-wrap">
-    {{#each comments}}
+    {{#each comments.rows}}
       <div class="m-1"> 
         <a href="/restaurants/{{this.Restaurant.id}}">
         <img class="card-img-top" src="{{this.Restaurant.image}}" alt="Card image cap" style="width:50px; height:45px">
