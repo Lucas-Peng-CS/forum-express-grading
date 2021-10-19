@@ -63,6 +63,8 @@ router.delete('/admin/categories/:id', authenticatedAdmin, categoryController.de
 router.get('/restaurants/feeds', authenticated, restController.getFeeds)
 
 router.get('/restaurants/:id', authenticated, restController.getRestaurant)
+// 餐廳資訊整理：Dashboard
+router.get('/restaurants/:id/dashboard', authenticated, restController.getDashboard)
 
 router.post('/comments', authenticated, commentController.postComment)
 
