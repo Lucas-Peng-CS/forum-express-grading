@@ -1,9 +1,5 @@
 const pageLimit = 10
-const db = require('../models')
-const Restaurant = db.Restaurant
-const Category = db.Category
-const Comment = db.Comment
-const User = db.User
+const { Restaurant, Category, Comment, User, Client, Favorite,  Sequelize } = require('../models')
 const helpers = require('../_helpers')
 
 const restController = {
@@ -58,23 +54,46 @@ const restController = {
     })
   },
 
-  getRestaurant: (req, res) => {
-    return Restaurant.findByPk(req.params.id, {
-      include: [
-        Category,
-        { model: User, as: 'FavoritedUsers' },
-        { model: User, as: 'LikedUsers' },
-        { model: Comment, include: [User] }
-      ]
-    }).then(restaurant => {
-      const isFavorited = restaurant.FavoritedUsers.map(d => d.id).includes(helpers.getUser(req).id) // 找出收藏此餐廳的 user
-      const isLiked = restaurant.LikedUsers.map(d => d.id).includes(helpers.getUser(req).id)
+  getRestaurant: async (req, res) => {
+    const { session, ip } = req
+    const RestaurantId = req.params.id
+    const UserId = helpers.getUser(req).id
+
+    try {
+      const [restaurant, [client, created]] = await Promise.all([
+        Restaurant.findByPk(RestaurantId, {
+          include: [
+            Category,
+            { model: User, as: 'FavoritedUsers' },
+            { model: User, as: 'LikedUsers' },
+            { model: Comment, include: [User] }
+          ]
+        }),
+        Client.findOrCreate({
+          where: {UserId, IP: ip, RestaurantId }
+        })
+      ])
+        
+      if (!session.restaurantId) {
+        session.restaurantId = []
+      }
+ 
+      if (created && !session.restaurantId.includes(RestaurantId)) {
+        session.restaurantId.push(RestaurantId)
+        await restaurant.increment('viewCounts')
+      }
+
+      const isFavorited = restaurant.FavoritedUsers.find(d => d.id === UserId) !== undefined // 找出收藏此餐廳的 user
+      const isLiked = restaurant.LikedUsers.find(d => d.id === UserId) !== undefined
+      
       return res.render('restaurant', {
-        restaurant: restaurant.toJSON(),
-        isFavorited: isFavorited, // 將資料傳到前端
-        isLiked: isLiked
-      })
+      restaurant: restaurant.toJSON(),
+      isFavorited, // 將資料傳到前端
+      isLiked
     })
+    } catch (err) {
+      console.log('getRestaurant', err)
+    }
   },
 
   getFeeds: (req, res) => {
@@ -102,14 +121,30 @@ const restController = {
   },
 
   getDashboard: async (req, res) => {
+    const { id } = req.params
     try {
-      const restaurant = await Restaurant.findByPk(req.params.id, {
-        attributes:['name'],
+      const restaurant = await Restaurant.findByPk(id, {
+        attributes:[
+          'name',
+          'viewCounts',
+          [Sequelize.literal(`(SELECT COUNT(*) FROM Comments WHERE Comments.RestaurantId = ${id})`), 'commentCounts'],
+          [Sequelize.literal(`(SELECT COUNT(*) FROM Favorites WHERE Favorites.RestaurantId = ${id})`), 'favoriteCounts']
+        ],
         include: [{model: Category, attributes:['name']}]
       })
-      console.log('*********')
-      console.log(restaurant.toJSON())
-      console.log('*********')
+      //  請問助教上面和下面2種寫法，哪一種執行的速度會比較快呢?
+      // const [restaurant, commentCounts, favoriteCounts] = await Promise.all([
+      //   Restaurant.findByPk(id, {
+      //     attributes:[
+      //       'name',
+      //       'viewCounts',
+      //     ],
+      //     include: [{model: Category, attributes:['name']}]
+      //   }),
+      //   Comment.count({where: { RestaurantId: id }}),
+      //   Favorite.count({where: { RestaurantId: id }})
+      // ])
+ 
       res.render('dashboard', {
         restaurant: restaurant.toJSON()
       })
