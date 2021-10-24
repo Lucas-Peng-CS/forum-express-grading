@@ -61,6 +61,8 @@ router.put('/admin/categories/:id', authenticatedAdmin, categoryController.putCa
 router.delete('/admin/categories/:id', authenticatedAdmin, categoryController.deleteCategory)
 
 router.get('/restaurants/feeds', authenticated, restController.getFeeds)
+// TOP 10 人氣餐廳
+router.get('/restaurants/top', authenticated, restController.getTopRestaurants)
 
 router.get('/restaurants/:id', authenticated, restController.getRestaurant)
 // 餐廳資訊整理：Dashboard

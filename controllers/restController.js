@@ -151,6 +151,32 @@ const restController = {
     } catch (err) {
       console.log('getDashboard', err)
     }
+  },
+
+  getTopRestaurants: async (req, res) => {
+    const currentUserId = helpers.getUser(req).id
+    try {
+      const topRestaurants = await Restaurant.findAll({
+        attributes: [
+          'id',
+          'name',
+          'description',
+          'image',
+          [Sequelize.literal(`(SELECT COUNT(*) FROM Favorites WHERE RestaurantId = Restaurant.id)`), 'favoriteCounts'],
+          [Sequelize.literal(`EXISTS(SELECT 1 FROM Favorites WHERE UserId = ${currentUserId} AND RestaurantId = Restaurant.id)`), 'isFavorited']
+        ],
+        order: [[Sequelize.col('favoriteCounts'), 'DESC']],
+        limit: 10,
+        raw: true,
+        nest: true
+      })
+      
+      res.render('topRestaurant', {
+        topRestaurants
+      })
+    } catch (err) {
+      console.log('getTopRestaurants', err)
+    }
   }
 }
 
