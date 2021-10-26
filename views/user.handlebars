@@ -1,30 +1,105 @@
 <div class="container">
   <div class="row">
     <div class="col-4">
-      <img class="img-responsive center-block" src="{{user.image}}" style="width: 250px;margin-bottom: 25px;">
+      <img class="img-responsive center-block" src="{{targetUser.image}}" style="width: 250px;margin-bottom: 25px;">
     </div>
     <div class="col-8">
-      <div class="font-weight-bold mb-1">{{user.name}}</div>
-      <div class="mb-3">{{user.email}}</div>
-      <div class="mb-3">{{comments.count}} 已評論餐廳</div>
-      <div class="edit-btn">
-        <a class="btn btn-primary" href="/users/{{user.id}}/edit" role="button">edit</a>
+      <div class="font-weight-bold mb-1">{{targetUser.name}}</div>
+      <div class="mb-3">{{targetUser.email}}</div>
+      <div class=""><strong>{{comments.count}}</strong> 已評論餐廳</div>
+      <div class=""><strong>{{targetUser.FavoritedRestaurants.length}}</strong> 收藏的餐廳</div>
+      <div class=""><strong>{{targetUser.Followings.length}}</strong> followings (追蹤者)</div>
+      <div class="mb-3"><strong>{{targetUser.Followers.length}}</strong> followers (追隨者)</div>
+      
+      {{#ifCond targetUser.id currentUserId}}
+        <div class="edit-btn">
+          <a class="btn btn-primary" href="/users/{{targetUser.id}}/edit" role="button">edit</a>
+        </div>
+      {{else}}
+        {{#if targetUser.isFollowed }}
+          <form 
+            action="/following/{{targetUser.id}}?_method=DELETE" method="POST" style="display: contents;"><button type="submit" class="btn btn-danger">取消追蹤</button>
+          </form>
+        {{else}}
+          <form action="/following/{{targetUser.id}}" method="POST" style="display: contents;"><button type="submit"
+            class="btn btn-primary">追蹤</button>
+          </form>
+        {{/if}}
+      {{/ifCond}}
+
+    </div>
+  </div>
+</div>
+
+
+<div class="row justify-content-center">
+  <div class="col-4">
+    <div class="card">
+      <div class="card-header">
+        <strong>{{targetUser.Followings.length}}</strong> followings (追蹤者)
+      </div>
+      <div class="card-body d-flex flex-row flex-wrap">
+        {{#each targetUser.Followings}}
+          <div class="m-1"> 
+            <a href="/users/{{this.id}}">
+            <img class="card-img-top" src="{{this.image}}" alt="Card image cap" style="width:50px; height:45px">
+            </a>
+          </div>
+      {{/each}}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-8">
+    <div class="card">
+      <div class="card-header">
+        <strong>{{comments.count}}</strong> 已評論餐廳
+      </div>
+      <div class="card-body d-flex flex-row flex-wrap">
+        {{#each comments.rows}}
+          <div class="m-1"> 
+            <a href="/restaurants/{{this.Restaurant.id}}">
+            <img class="card-img-top" src="{{this.Restaurant.image}}" alt="Card image cap" style="width:50px; height:45px">
+            </a>
+          </div>
+      {{/each}}
       </div>
     </div>
   </div>
 </div>
 
-<div class="card mx-3">
-  <div class="card-header">
-    {{comments.count}} 已評論餐廳
-  </div>
-  <div class="card-body d-flex flex-row flex-wrap">
-    {{#each comments.rows}}
-      <div class="m-1"> 
-        <a href="/restaurants/{{this.Restaurant.id}}">
-        <img class="card-img-top" src="{{this.Restaurant.image}}" alt="Card image cap" style="width:50px; height:45px">
-        </a>
+<div class="row justify-content-center mt-3">
+  <div class="col-4">
+    <div class="card">
+      <div class="card-header">
+        <strong>{{targetUser.Followers.length}}</strong> followers (追隨者)
       </div>
-   {{/each}}
+      <div class="card-body d-flex flex-row flex-wrap">
+        {{#each targetUser.Followers}}
+          <div class="m-1"> 
+            <a href="/users/{{this.id}}">
+            <img class="card-img-top" src="{{this.image}}" alt="Card image cap" style="width:50px; height:45px">
+            </a>
+          </div>
+      {{/each}}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-8">
+    <div class="card">
+      <div class="card-header">
+        <strong>{{targetUser.FavoritedRestaurants.length}}</strong> 收藏的餐廳
+      </div>
+      <div class="card-body d-flex flex-row flex-wrap">
+      {{#each targetUser.FavoritedRestaurants}}
+        <div class="m-1"> 
+          <a href="/restaurants/{{this.id}}">
+          <img class="card-img-top" src="{{this.image}}" alt="Card image cap" style="width:50px; height:45px">
+          </a>
+        </div>
+      {{/each}}
+      </div>
+    </div>
   </div>
 </div>

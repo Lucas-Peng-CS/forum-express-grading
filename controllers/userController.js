@@ -40,7 +40,7 @@ const userController = {
               name: req.body.name,
               email: req.body.email,
               password: bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10), null),
-              image: null
+              image: 'https://i.imgur.com/q6bwDGO.png'
             }).then(user => {
               req.flash('success_messages', '成功註冊帳號！')
               return res.redirect('/signin')
@@ -52,11 +52,25 @@ const userController = {
   },
 
   getUser: async (req, res) => {
-    const UserId = helpers.getUser(req).id
-    
+    const UserId = req.params.id
+    const currentUserId = helpers.getUser(req).id
+
     try {
-      const [user, comments] = await Promise.all([
-        User.findByPk(UserId, { raw: true }),
+      const [targetUser, comments] = await Promise.all([
+        User.findByPk(UserId, { 
+          attributes:[
+            'id', 
+            'image', 
+            'name', 
+            'email',
+            [Sequelize.literal(`EXISTS(SELECT 1 FROM Followships WHERE followerId = ${currentUserId} AND followingId = ${UserId})`), 'isFollowed']
+          ],
+          include: [
+            { model: Restaurant, attributes:['id', 'image'], as: 'FavoritedRestaurants' },
+            { model: User, attributes:['id', 'image'], as: 'Followers' },
+            { model: User, attributes:['id', 'image'], as: 'Followings' }
+          ]
+        }),
         Comment.findAndCountAll({
           where: { UserId },
           include: [{model: Restaurant, attributes:['id', 'image']}],
@@ -65,9 +79,10 @@ const userController = {
           nest: true
         })
       ])
-      return res.render('user', { user, comments })
+      
+      return res.render('user', { targetUser: targetUser.toJSON(), comments, currentUserId })
     } catch (err) {
-      console.log(err)
+      console.log('getUser', err)
     }
   },
 
